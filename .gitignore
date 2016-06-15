@@ -1,0 +1,18 @@
+# Java
+
+*.class
+
+
+# IntelliJ IDEA
+
+*.iml
+.idea/
+
+
+# Maven
+
+target/
+
+# Netbeans
+
+nbactions.xml
