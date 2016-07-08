@@ -3,6 +3,7 @@ package vfeqs.runner;
 
 import vfeqs.experiment.Experiment;
 import vfeqs.model.RORChoice;
+import vfeqs.model.RORClassification;
 import vfeqs.model.RORRanking;
 import vfeqs.model.RORResult;
 
@@ -79,7 +80,20 @@ public class Main {
                             }
 
                             sb.deleteCharAt(sb.length() - 1).append("}");
+                        } else {
+                            RORClassification classification = (RORClassification) result;
+
+                            sb.append("PROGRESS\t")
+                                    .append(experiment.toCSVString())
+                                    .append("\t")
+                                    .append(classification.getPreferenceInformation().size())
+                                    .append("\t")
+                                    .append(experiment.getExperimentHash())
+                                    .append("\t")
+                                    .append(classification.getQuestions().size());
                         }
+
+                        System.out.println(sb.toString());
                     }
 
                     if (printFinalResult && result.getQuestions().size() == 0) {

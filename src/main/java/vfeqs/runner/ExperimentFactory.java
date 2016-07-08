@@ -201,9 +201,8 @@ public class ExperimentFactory {
             resultFactory = new RORChoiceFactory();
             strategyFactory = new ChoiceStrategyFactory();
         } else { // Type.Sorting
-//            resultFactory = new RORClassificationFactory();
-//            strategyFactory = new SortingStrategyFactory();
-            throw new UnsupportedOperationException("Sorting is not supported yet.");
+            resultFactory = new RORClassificationFactory();
+            strategyFactory = new SortingStrategyFactory();
         }
 
         Iterable<Strategy> strategies = strategyFactory.create(strategiesIds);
@@ -262,7 +261,11 @@ public class ExperimentFactory {
                                 for (int j = 0; j < numberOfRepetitions; j++) {
 
                                     if (decisionMaker == null) {
-                                        decisionMaker = new FixedDecisionMaker(RandomRanking.generate(problem, minEpsilon, thinningFunction));
+                                        if (type == Type.Ranking || type == Type.Choice) {
+                                            decisionMaker = new FixedDecisionMaker(RandomRanking.generate(problem, minEpsilon, thinningFunction));
+                                        } else { // Type.Sorting
+                                            decisionMaker = new FixedDecisionMaker(RandomAssignment.generate(problem, minEpsilon, thinningFunction));
+                                        }
                                     }
 
                                     Experiment experiment = new Experiment(
