@@ -11,9 +11,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-public class DVFSortingSearchStrategy extends SortingStrategy {
+public class DVFSortingStrategy extends SortingStrategy {
 
-    public DVFSortingSearchStrategy() {
+    public DVFSortingStrategy() {
         super(null);
     }
 
