@@ -145,4 +145,41 @@ public class RORClassification extends RORResult<VFClassificationSolution, Exact
     public ContAssignmentRelation getContAssignmentRelation() {
         return contAssignmentRelation;
     }
+
+    public double getAverageCAIEntropy() {
+        double result = 0.0;
+
+        for (int i = 0; i < this.getProblem().getNumberOfAlternatives(); i++) {
+            result += getCAIEntropy(i);
+        }
+
+        return result / (double) this.getProblem().getNumberOfAlternatives();
+    }
+
+    public double getAverageAIW() {
+        double result = 0.0;
+
+        for (int i = 0; i < this.getProblem().getNumberOfAlternatives(); i++) {
+            result += this.getAIW(i);
+        }
+
+        return result / (double) this.getProblem().getNumberOfAlternatives();
+    }
+
+    public double getCAIEntropy(int alternative) {
+        double result = 0.0;
+
+        for (int j = 0; j < this.getProblem().getNumberOfClasses(); j++) {
+            double cai = this.getCAI(alternative, j);
+
+            if (cai > 0) {
+                result += -cai * Math.log(cai) / Math.log(2);
+            }
+        }
+        return result;
+    }
+
+    public int getAIW(int alternative) {
+        return this.contAssignmentRelation.getCmax(alternative) - this.contAssignmentRelation.getCmin(alternative) + 1;
+    }
 }

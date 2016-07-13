@@ -24,18 +24,7 @@ public class CAISortingStrategy extends SortingStrategy {
         double maxScore = Double.NEGATIVE_INFINITY;
 
         for (ExactAssignmentQuestion question : rorClassification.getQuestions()) {
-            int numberOfAnswers = question.getNumberOfAnswers();
-
-            double score = 0.0;
-
-            for (int i = 0; i < numberOfAnswers; i++) {
-                double cai = rorClassification.getCAI(question.getAlternative(),
-                        rorClassification.getContAssignmentRelation().getAnswer(question.getAlternative(), i));
-
-                if (cai > 0) {
-                    score += -cai * Math.log(cai) / Math.log(2);
-                }
-            }
+            double score = rorClassification.getCAIEntropy(question.getAlternative());
 
             if (bestQuestions.size() == 0 || score > maxScore) {
                 maxScore = score;

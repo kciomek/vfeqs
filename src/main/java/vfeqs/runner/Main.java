@@ -90,7 +90,11 @@ public class Main {
                                     .append("\t")
                                     .append(experiment.getExperimentHash())
                                     .append("\t")
-                                    .append(classification.getQuestions().size());
+                                    .append(classification.getQuestions().size())
+                                    .append("\t")
+                                    .append(classification.getAverageCAIEntropy())
+                                    .append("\t")
+                                    .append(classification.getAverageAIW());
                         }
 
                         System.out.println(sb.toString());

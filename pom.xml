@@ -6,7 +6,7 @@
 
     <groupId>vfeqs</groupId>
     <artifactId>vfeqs</artifactId>
-    <version>0.16.1</version>
+    <version>0.16.2</version>
     <packaging>jar</packaging>
 
     <properties>
