@@ -209,6 +209,7 @@ public class ExperimentFactory {
 
         int priority = initialPriority;
         DecisionMaker decisionMaker = ExperimentFactory.parseDecisionMaker(type, dmId);
+        final boolean generateFixedDecisionMaker = decisionMaker == null;
 
         for (int cls : numberOfClasses) {
             for (int p: numberOfChPoints) {
@@ -257,17 +258,16 @@ public class ExperimentFactory {
                                 problem = new VFProblem(PerformanceMatrix.load(seed.getPath()), p, cls);
                             }
 
-                            for (Strategy strategy : strategies) {
-                                for (int j = 0; j < numberOfRepetitions; j++) {
-
-                                    if (decisionMaker == null) {
-                                        if (type == Type.Ranking || type == Type.Choice) {
-                                            decisionMaker = new FixedDecisionMaker(RandomRanking.generate(problem, minEpsilon, thinningFunction));
-                                        } else { // Type.Sorting
-                                            decisionMaker = new FixedDecisionMaker(RandomAssignment.generate(problem, minEpsilon, thinningFunction));
-                                        }
+                            for (int j = 0; j < numberOfRepetitions; j++) {
+                                if (generateFixedDecisionMaker) {
+                                    if (type == Type.Ranking || type == Type.Choice) {
+                                        decisionMaker = new FixedDecisionMaker(RandomRanking.generate(problem, minEpsilon, thinningFunction));
+                                    } else { // Type.Sorting
+                                        decisionMaker = new FixedDecisionMaker(RandomAssignment.generate(problem, minEpsilon, thinningFunction));
                                     }
+                                }
 
+                                for (Strategy strategy : strategies) {
                                     Experiment experiment = new Experiment(
                                             resultFactory,
                                             problem, strategy, decisionMaker, minEpsilon,
