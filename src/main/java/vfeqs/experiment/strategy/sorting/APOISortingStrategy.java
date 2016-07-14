@@ -1,7 +1,6 @@
 package vfeqs.experiment.strategy.sorting;
 
 import vfeqs.experiment.ExactAssignmentQuestion;
-import vfeqs.experiment.PairwiseComparisonQuestion;
 import vfeqs.experiment.strategy.SortingStrategy;
 import vfeqs.experiment.strategy.StrategyResult;
 import vfeqs.model.RORClassification;
@@ -11,9 +10,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-public class DVFSortingStrategy extends SortingStrategy {
+public class APOISortingStrategy extends SortingStrategy {
 
-    public DVFSortingStrategy() {
+    public APOISortingStrategy() {
         super(null);
     }
 
@@ -25,16 +24,7 @@ public class DVFSortingStrategy extends SortingStrategy {
         double maxScore = Double.NEGATIVE_INFINITY;
 
         for (ExactAssignmentQuestion question : rorClassification.getQuestions()) {
-            int numberOfAnswers = question.getNumberOfAnswers();
-
-            double score = Double.POSITIVE_INFINITY;
-
-            for (int i = 0; i < numberOfAnswers; i++) {
-                double cai = rorClassification.getCAI(question.getAlternative(),
-                        rorClassification.getContAssignmentRelation().getAnswer(question.getAlternative(), i));
-
-                score = Math.min(score, cai);
-            }
+            double score = rorClassification.getAPOIEntropy(question.getAlternative());
 
             if (bestQuestions.size() == 0 || score > maxScore) {
                 maxScore = score;
@@ -51,6 +41,6 @@ public class DVFSortingStrategy extends SortingStrategy {
 
     @Override
     public String toString() {
-        return "DVF";
+        return "APOI";
     }
 }

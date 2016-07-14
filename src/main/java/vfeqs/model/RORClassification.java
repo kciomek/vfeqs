@@ -6,13 +6,13 @@ import vfeqs.experiment.Question;
 import vfeqs.model.preferenceinformation.AssignmentExample;
 import vfeqs.model.preferenceinformation.PreferenceInformation;
 import vfeqs.model.solution.VFClassificationSolution;
-import vfeqs.model.solution.VFRankingSolution;
 
 import java.util.*;
 
 public class RORClassification extends RORResult<VFClassificationSolution, ExactAssignmentQuestion> {
     private final ContAssignmentRelation contAssignmentRelation;
     private final Double[][] cai;
+    private final Double[][] apoi;
 
     private List<VFClassificationSolution> samples;
 
@@ -20,6 +20,7 @@ public class RORClassification extends RORResult<VFClassificationSolution, Exact
         super(problem, numberOfSamples, minEpsilon, thinningFunction, calculateProbability, parameters);
 
         this.cai = new Double[this.getProblem().getNumberOfAlternatives()][this.getProblem().getNumberOfClasses()];
+        this.apoi = new Double[this.getProblem().getNumberOfAlternatives()][this.getProblem().getNumberOfAlternatives()];
 
         if (calculateProbability) {
             this.samples = this.generateSamples();
@@ -35,6 +36,7 @@ public class RORClassification extends RORResult<VFClassificationSolution, Exact
         super(classification, question, answer);
 
         this.cai = new Double[this.getProblem().getNumberOfAlternatives()][this.getProblem().getNumberOfClasses()];
+        this.apoi = new Double[this.getProblem().getNumberOfAlternatives()][this.getProblem().getNumberOfAlternatives()];
 
         if (this.getCalculateProbability()) {
             this.samples = this.generateSamples();
@@ -81,6 +83,22 @@ public class RORClassification extends RORResult<VFClassificationSolution, Exact
         return this.cai[alternative][classIndex];
     }
 
+    private double getAPOI(int alternative, int referenceAlternative) {
+        if (this.apoi[alternative][referenceAlternative] == null) {
+            int atLeastAsGood = 0;
+
+            for (VFClassificationSolution sample : this.getSamples()) {
+                if (sample.getAssignment(alternative) >= sample.getAssignment(alternative)) {
+                    atLeastAsGood++;
+                }
+            }
+
+            this.apoi[alternative][referenceAlternative] = atLeastAsGood / (double) this.getNumberOfSamples();
+        }
+
+        return this.apoi[alternative][referenceAlternative];
+    }
+
     @Override
     protected RORResult createSuccessor(Question question, PreferenceInformation pi) {
         return new RORClassification(this, question, pi);
@@ -124,7 +142,12 @@ public class RORClassification extends RORResult<VFClassificationSolution, Exact
     public int getAnswerIndexByResult(Question question, int[] data) {
         Integer alternative = ((ExactAssignmentQuestion) question).getAlternative();
 
-        return this.contAssignmentRelation.getIndexByAnswer(alternative, data[alternative]);
+        try {
+            return this.contAssignmentRelation.getIndexByAnswer(alternative, data[alternative]);
+        } catch (ArrayIndexOutOfBoundsException e) {
+            int a = 0;
+            return -1;
+        }
     }
 
     @Override
@@ -176,10 +199,25 @@ public class RORClassification extends RORResult<VFClassificationSolution, Exact
                 result += -cai * Math.log(cai) / Math.log(2);
             }
         }
+
         return result;
     }
 
     public int getAIW(int alternative) {
         return this.contAssignmentRelation.getCmax(alternative) - this.contAssignmentRelation.getCmin(alternative) + 1;
+    }
+
+    public double getAPOIEntropy(int alternative) {
+        double result = 0.0;
+
+        for (int j = 0; j < this.getProblem().getNumberOfClasses(); j++) {
+            double apoi = this.getAPOI(alternative, j);
+
+            if (apoi > 0) {
+                result += -apoi * Math.log(apoi) / Math.log(2);
+            }
+        }
+
+        return result;
     }
 }
