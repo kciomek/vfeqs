@@ -210,6 +210,7 @@ public class ExperimentFactory {
 
         int priority = initialPriority;
         DecisionMaker decisionMaker = ExperimentFactory.parseDecisionMaker(type, dmId);
+        final boolean generateFixedDecisionMaker = decisionMaker == null;
 
         for (int cls : numberOfClasses) {
             for (int p: numberOfChPoints) {
@@ -258,13 +259,12 @@ public class ExperimentFactory {
                                 problem = new VFProblem(PerformanceMatrix.load(seed.getPath()), p, cls);
                             }
 
-                            for (Strategy strategy : strategies) {
-                                for (int j = 0; j < numberOfRepetitions; j++) {
+                            for (int j = 0; j < numberOfRepetitions; j++) {
+                                if (generateFixedDecisionMaker) {
+                                    decisionMaker = new FixedDecisionMaker(RandomRanking.generate(problem, minEpsilon, thinningFunction));
+                                }
 
-                                    if (decisionMaker == null) {
-                                        decisionMaker = new FixedDecisionMaker(RandomRanking.generate(problem, minEpsilon, thinningFunction));
-                                    }
-
+                                for (Strategy strategy : strategies) {
                                     Experiment experiment = new Experiment(
                                             resultFactory,
                                             problem, strategy, decisionMaker, minEpsilon,
