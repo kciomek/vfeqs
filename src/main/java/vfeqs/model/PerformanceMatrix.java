@@ -33,6 +33,8 @@ public class PerformanceMatrix { //todo split to separate classes PredefinedPerf
     private final String identifier; // file name or seed
     private final GenerationMethod generationMethod;
 
+    public int[] numberOfDominanceRelated;
+
     private PerformanceMatrix(double[][] data, String identifier, GenerationMethod generationMethod) {
         this.data = data;
         this.identifier = identifier;
@@ -149,6 +151,28 @@ public class PerformanceMatrix { //todo split to separate classes PredefinedPerf
         }
 
         return result;
+    }
+
+    public int getNumberOfDominanceRelated(int alternative) {
+        if (numberOfDominanceRelated == null) {
+            this.numberOfDominanceRelated = new int[data.length];
+
+            for (int i = 0; i < data.length; i++) {
+                int result = 0;
+
+                for (int j = 0; j < data.length; j++) {
+                    if (i != j) {
+                        if (PerformanceMatrix.isVectorDominatedBy(data[i], data[j]) || PerformanceMatrix.isVectorDominatedBy(data[j], data[i])) {
+                            result++;
+                        }
+                    }
+                }
+
+                this.numberOfDominanceRelated[i] = result;
+            }
+        }
+
+        return this.numberOfDominanceRelated[alternative];
     }
 
     public double[][] getData() {
