@@ -8,12 +8,13 @@ import vfeqs.model.RORResult;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 
 public class AIWSortingStrategy extends SortingStrategy {
 
-    public AIWSortingStrategy() {
-        super(null);
+    public AIWSortingStrategy (Map resultParameters) {
+        super(resultParameters);
     }
 
     @Override
@@ -41,6 +42,6 @@ public class AIWSortingStrategy extends SortingStrategy {
 
     @Override
     public String toString() {
-        return "AIW";
+        return "AIW" + this.getSuffix();
     }
 }

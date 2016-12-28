@@ -74,7 +74,7 @@ public class Experiment implements Comparable<Experiment> {
                     observer.notify(this, current);
                 }
 
-                int completeness = current.getQuestions().size();
+                int completeness = current.getNumberOfQuestions();
 
                 if (completeness == 0 || (completeness == 1 && !processAll)) {
                     for (int i = 0; i <= completeness; i++) {

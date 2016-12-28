@@ -8,12 +8,13 @@ import vfeqs.model.RORResult;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 
 public class APOISortingStrategy extends SortingStrategy {
 
-    public APOISortingStrategy() {
-        super(null);
+    public APOISortingStrategy (Map resultParameters) {
+        super(resultParameters);
     }
 
     @Override
@@ -41,6 +42,6 @@ public class APOISortingStrategy extends SortingStrategy {
 
     @Override
     public String toString() {
-        return "APOI";
+        return "APOI" + this.getSuffix();
     }
 }

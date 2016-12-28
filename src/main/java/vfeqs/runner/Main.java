@@ -48,7 +48,7 @@ public class Main {
                                     .append("\t")
                                     .append(ranking.getNumberOfDifferentRankings())
                                     .append("\t")
-                                    .append(ranking.getQuestions().size())
+                                    .append(ranking.getNumberOfQuestions())
                                     .append("\t")
                                     .append(ranking.getNumberOfNecessaryRelations())
                                     .append("\t")
@@ -67,7 +67,7 @@ public class Main {
                                     .append("\t")
                                     .append(experiment.getExperimentHash())
                                     .append("\t")
-                                    .append(choice.getQuestions().size())
+                                    .append(choice.getNumberOfQuestions())
                                     .append("\t")
                                     .append(choice.getRelation().getPotentiallyOptimalAlternatives().size())
                                     .append("\t")
@@ -90,7 +90,7 @@ public class Main {
                                     .append("\t")
                                     .append(experiment.getExperimentHash())
                                     .append("\t")
-                                    .append(classification.getQuestions().size())
+                                    .append(classification.getNumberOfQuestions())
                                     .append("\t")
                                     .append(classification.getAverageCAIEntropy())
                                     .append("\t")
@@ -100,7 +100,7 @@ public class Main {
                         System.out.println(sb.toString());
                     }
 
-                    if (printFinalResult && result.getQuestions().size() == 0) {
+                    if (printFinalResult && result.getNumberOfQuestions() == 0) {
                         StringBuilder sb = new StringBuilder();
                         sb.append("RESULT\t")
                                 .append(experiment.toCSVString())

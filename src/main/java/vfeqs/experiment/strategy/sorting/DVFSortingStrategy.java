@@ -9,12 +9,13 @@ import vfeqs.model.RORResult;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 
 public class DVFSortingStrategy extends SortingStrategy {
 
-    public DVFSortingStrategy() {
-        super(null);
+    public DVFSortingStrategy (Map resultParameters) {
+        super(resultParameters);
     }
 
     @Override
@@ -51,6 +52,6 @@ public class DVFSortingStrategy extends SortingStrategy {
 
     @Override
     public String toString() {
-        return "DVF";
+        return "DVF" + this.getSuffix();
     }
 }

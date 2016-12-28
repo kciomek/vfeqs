@@ -19,7 +19,7 @@ public class FixedDecisionMaker implements DecisionMaker {
             sb.append(i).append("-");
         }
 
-        sb.deleteCharAt(sb.length()-1);
+        sb.deleteCharAt(sb.length() - 1);
 
         this.summary = sb.toString();
     }
