@@ -204,4 +204,6 @@ public abstract class RORResult<SAMPLE_TYPE, QUESTION_TYPE extends Question> {
         this.getQuestions(); // for synchronization purposes // fixme
         return this.questions.size();
     }
+
+    public abstract boolean isAlternativeStopCriterionSatisfied();
 }

@@ -76,6 +76,10 @@ public class Experiment implements Comparable<Experiment> {
 
                 int completeness = current.getNumberOfQuestions();
 
+                if (current.isAlternativeStopCriterionSatisfied()) {
+                    completeness = 0;
+                }
+
                 if (completeness == 0 || (completeness == 1 && !processAll)) {
                     for (int i = 0; i <= completeness; i++) {
                         result.add(new Pair<Integer, Pair<Double, Double>>(current.getPreferenceInformation().size() + completeness,

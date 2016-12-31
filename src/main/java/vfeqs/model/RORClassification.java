@@ -151,6 +151,11 @@ public class RORClassification extends RORResult<VFClassificationSolution, Exact
     }
 
     @Override
+    public boolean isAlternativeStopCriterionSatisfied() {
+        return false;
+    }
+
+    @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
 
