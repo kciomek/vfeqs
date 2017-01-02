@@ -2,6 +2,7 @@ package vfeqs.model;
 
 import polyrun.thinning.ThinningFunction;
 import vfeqs.experiment.ExactAssignmentQuestion;
+import vfeqs.experiment.Pair;
 import vfeqs.experiment.Question;
 import vfeqs.model.preferenceinformation.AssignmentExample;
 import vfeqs.model.preferenceinformation.PreferenceInformation;
@@ -145,13 +146,39 @@ public class RORClassification extends RORResult<VFClassificationSolution, Exact
         try {
             return this.contAssignmentRelation.getIndexByAnswer(alternative, data[alternative]);
         } catch (ArrayIndexOutOfBoundsException e) {
-            int a = 0;
             return -1;
         }
     }
 
     @Override
     public boolean isAlternativeStopCriterionSatisfied() {
+        Pair<String, Double> stopCriterion = (Pair<String, Double>) this.parameters.get("stopCriterion");
+
+        if (stopCriterion != null) {
+            if (stopCriterion.getFirst().equals("CAI")) {
+                Double threshold = stopCriterion.getSecond();
+
+                for (int alternative = 0; alternative < this.getProblem().getNumberOfAlternatives(); alternative++) {
+                    boolean thereIsAtLeastOneOverThreshold = false;
+
+                    for (int classIdx = 0; classIdx < this.getProblem().getNumberOfClasses(); classIdx++) {
+                        if (this.getCAI(alternative, classIdx) >= threshold) {
+                            thereIsAtLeastOneOverThreshold = true;
+                            break;
+                        }
+                    }
+
+                    if (!thereIsAtLeastOneOverThreshold) {
+                        return false;
+                    }
+                }
+
+                return true;
+            } else {
+                throw new RuntimeException("Unsupported stop criterion: " + stopCriterion.getFirst());
+            }
+        }
+
         return false;
     }
 
