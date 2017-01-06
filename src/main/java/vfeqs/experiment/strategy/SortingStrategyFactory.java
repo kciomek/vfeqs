@@ -41,7 +41,15 @@ public class SortingStrategyFactory extends StrategyFactory {
         final String name = nameAndParameters.getFirst();
         final Map parameters = nameAndParameters.getSecond();
 
-        if (name.equals("RAND")) {
+        if (name.indexOf("-") >= 0) {
+            final String[] subNames = name.split("-");
+
+            return new SortingScoreSearchStrategy(
+                    SortingScoreSearchStrategy.Merger.valueOf(subNames[0]),
+                    SortingScoreSearchStrategy.Scorer.valueOf(subNames[1]),
+                    parameters
+            );
+        } else if (name.equals("RAND")) {
             return new RandomStrategy(parameters);
         } else if (name.equals("DVF")) {
             return new DVFSortingStrategy(parameters);

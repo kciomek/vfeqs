@@ -120,16 +120,24 @@ public class RORClassification extends RORResult<VFClassificationSolution, Exact
 
     @Override
     protected void syncQuestions(List<ExactAssignmentQuestion> questions) {
+        List<ExactAssignmentQuestion> update = new ArrayList<ExactAssignmentQuestion>();
+
         for (Iterator<ExactAssignmentQuestion> iterator = questions.iterator(); iterator.hasNext(); ) {
             ExactAssignmentQuestion question = iterator.next();
 
             if (this.contAssignmentRelation.getCmin(question.getAlternative()) == this.contAssignmentRelation.getCmax(question.getAlternative())) {
                 iterator.remove();
             } else {
-                question.setInterval(this.contAssignmentRelation.getCmin(question.getAlternative()),
-                        this.contAssignmentRelation.getCmax(question.getAlternative()));
+                int cmin = this.contAssignmentRelation.getCmin(question.getAlternative());
+                int cmax = this.contAssignmentRelation.getCmax(question.getAlternative());
+                if (question.getFrom() != cmin || question.getTo() != cmax) {
+                    iterator.remove();
+                    update.add(new ExactAssignmentQuestion(question.getAlternative(), cmin, cmax));
+                }
             }
         }
+
+        questions.addAll(update);
     }
 
     @Override
@@ -143,11 +151,15 @@ public class RORClassification extends RORResult<VFClassificationSolution, Exact
     public int getAnswerIndexByResult(Question question, int[] data) {
         Integer alternative = ((ExactAssignmentQuestion) question).getAlternative();
 
-        try {
-            return this.contAssignmentRelation.getIndexByAnswer(alternative, data[alternative]);
-        } catch (ArrayIndexOutOfBoundsException e) {
-            return -1;
+        final int cmin = this.contAssignmentRelation.getCmin(alternative);
+        final int cmax = this.contAssignmentRelation.getCmax(alternative);
+        final int proposedAssignment = data[alternative];
+
+        if (proposedAssignment < cmin || proposedAssignment > cmax) {
+            throw new RuntimeException("Proposed assignment is out of possible assignment interval.");
         }
+
+        return proposedAssignment - cmin;
     }
 
     @Override
@@ -206,6 +218,16 @@ public class RORClassification extends RORResult<VFClassificationSolution, Exact
 
         for (int i = 0; i < this.getProblem().getNumberOfAlternatives(); i++) {
             result += getCAIEntropy(i);
+        }
+
+        return result / (double) this.getProblem().getNumberOfAlternatives();
+    }
+
+    public double getAverageAPOIEntropy() {
+        double result = 0.0;
+
+        for (int i = 0; i < this.getProblem().getNumberOfAlternatives(); i++) {
+            result += getAPOIEntropy(i);
         }
 
         return result / (double) this.getProblem().getNumberOfAlternatives();

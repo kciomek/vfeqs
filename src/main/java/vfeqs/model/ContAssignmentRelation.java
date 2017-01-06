@@ -97,7 +97,4 @@ public class ContAssignmentRelation {
         return this.cmin[alternative] + index;
     }
 
-    public Integer getIndexByAnswer(int alternative, int answer) {
-        return answer - this.cmin[alternative];
-    }
 }

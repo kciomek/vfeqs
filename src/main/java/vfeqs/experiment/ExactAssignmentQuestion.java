@@ -53,8 +53,11 @@ public class ExactAssignmentQuestion implements Question {
         return "ExactAssignmentQuestion{" + getAlternative() + ":C" + (from ) + "-C" + (to) + "}";
     }
 
-    public void setInterval(int cmin, int cmax) {
-        this.from = cmin;
-        this.to = cmax;
+    public int getFrom() {
+        return from;
+    }
+
+    public int getTo() {
+        return to;
     }
 }

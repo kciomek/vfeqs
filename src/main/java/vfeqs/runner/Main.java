@@ -94,6 +94,8 @@ public class Main {
                                     .append("\t")
                                     .append(classification.getAverageCAIEntropy())
                                     .append("\t")
+                                    .append(classification.getAverageAPOIEntropy())
+                                    .append("\t")
                                     .append(classification.getAverageAIW());
                         }
 

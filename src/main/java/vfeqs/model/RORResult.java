@@ -201,7 +201,9 @@ public abstract class RORResult<SAMPLE_TYPE, QUESTION_TYPE extends Question> {
     }
 
     public int getNumberOfQuestions() {
-        this.getQuestions(); // for synchronization purposes // fixme
+        //fixme
+        this.getQuestions();
+        this.questionUpdateNeeded = true;
         return this.questions.size();
     }
 
