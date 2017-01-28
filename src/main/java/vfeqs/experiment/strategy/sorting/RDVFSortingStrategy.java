@@ -13,40 +13,24 @@ import java.util.Random;
 
 public class RDVFSortingStrategy extends SortingStrategy {
 
-    public RDVFSortingStrategy (Map resultParameters) {
+    public RDVFSortingStrategy(Map resultParameters) {
         super(resultParameters);
     }
 
     @Override
-    public StrategyResult chooseQuestion(RORClassification rorClassification) {
-        // assuming that there is at least one pair to compare
+    protected double scoreQuestion(RORClassification rorClassification, ExactAssignmentQuestion question) {
+        int numberOfAnswers = question.getNumberOfAnswers();
 
-        List<ExactAssignmentQuestion> bestQuestions = new ArrayList<ExactAssignmentQuestion>();
-        double minScore = Double.POSITIVE_INFINITY;
+        double score = Double.NEGATIVE_INFINITY;
 
-        for (ExactAssignmentQuestion question : rorClassification.getQuestions()) {
-            int numberOfAnswers = question.getNumberOfAnswers();
+        for (int i = 0; i < numberOfAnswers; i++) {
+            double cai = rorClassification.getCAI(question.getAlternative(),
+                    rorClassification.getContAssignmentRelation().getAnswer(question.getAlternative(), i));
 
-            double score = Double.NEGATIVE_INFINITY;
-
-            for (int i = 0; i < numberOfAnswers; i++) {
-                double cai = rorClassification.getCAI(question.getAlternative(),
-                        rorClassification.getContAssignmentRelation().getAnswer(question.getAlternative(), i));
-
-                score = Math.max(score, cai);
-            }
-
-            if (bestQuestions.size() == 0 || score < minScore) {
-                minScore = score;
-                bestQuestions.clear();
-                bestQuestions.add(question);
-            } else if (bestQuestions.size() > 0 && score == minScore) {
-                bestQuestions.add(question);
-            }
+            score = Math.max(score, cai);
         }
 
-        return new StrategyResult(bestQuestions.get(new Random().nextInt(bestQuestions.size())),
-                new ArrayList<RORResult>());
+        return score;
     }
 
     @Override

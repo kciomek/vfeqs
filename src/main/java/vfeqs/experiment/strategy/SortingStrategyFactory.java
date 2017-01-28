@@ -25,6 +25,11 @@ public class SortingStrategyFactory extends StrategyFactory {
                             Double.parseDouble(stopCriterionParameters[1])
                     ));
                     parameters.put("stopCriterionStr", param.substring(2));
+                } else if (param.substring(0, 1).equals("P")) {
+                    parameters.put("requestedIndex", Integer.parseInt(param.substring(1)));
+                }  else if (param.substring(0, 1).equals("T")) {
+                    parameters.put("tieResolver", this.create(param.substring(2)));
+                    parameters.put("tieResolverStr", param.substring(2));
                 } else {
                     throw new RuntimeException("Wrong parameter: '" + param + "' in " + strategyName + ".");
                 }

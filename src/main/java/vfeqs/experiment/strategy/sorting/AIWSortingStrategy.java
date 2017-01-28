@@ -18,26 +18,8 @@ public class AIWSortingStrategy extends SortingStrategy {
     }
 
     @Override
-    public StrategyResult chooseQuestion(RORClassification rorClassification) {
-        // assuming that there is at least one pair to compare
-
-        List<ExactAssignmentQuestion> bestQuestions = new ArrayList<ExactAssignmentQuestion>();
-        double maxScore = Double.NEGATIVE_INFINITY;
-
-        for (ExactAssignmentQuestion question : rorClassification.getQuestions()) {
-            double score = question.getNumberOfAnswers();
-
-            if (bestQuestions.size() == 0 || score > maxScore) {
-                maxScore = score;
-                bestQuestions.clear();
-                bestQuestions.add(question);
-            } else if (bestQuestions.size() > 0 && score == maxScore) {
-                bestQuestions.add(question);
-            }
-        }
-
-        return new StrategyResult(bestQuestions.get(new Random().nextInt(bestQuestions.size())),
-                new ArrayList<RORResult>());
+    public double scoreQuestion(RORClassification classification, ExactAssignmentQuestion question) {
+        return -question.getNumberOfAnswers();
     }
 
     @Override

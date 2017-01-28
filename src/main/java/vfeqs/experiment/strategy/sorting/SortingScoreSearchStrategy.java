@@ -60,51 +60,39 @@ public class SortingScoreSearchStrategy extends SortingStrategy {
         this.samplerRunner = new SamplerRunner(new HitAndRun(new LinearlyScalableThinningFunction(1.0)), new GLPKForPolyrun());
     }
 
+
     @Override
-    public StrategyResult chooseQuestion(RORClassification classification) {
-        List<StrategyResult> bestQuestions = new ArrayList<StrategyResult>();
-        double maxScore = Double.POSITIVE_INFINITY;
+    protected double scoreQuestion(RORClassification classification, ExactAssignmentQuestion question) {
+        double score;
 
-        for (ExactAssignmentQuestion question : classification.getQuestions()) {
-            double score;
+        Pair<List<Double>, StrategyResult> scores = this.score(classification, question);
 
-            Pair<List<Double>, StrategyResult> scores = this.score(classification, question);
+        if (this.merger == Merger.W) {
+            score = Collections.max(scores.getFirst());
+        } else if (this.merger == Merger.M) {
+            score = 0.0;
 
-            if (this.merger == Merger.W) {
-                score = Collections.max(scores.getFirst());
-            } else if (this.merger == Merger.M) {
-                score = 0.0;
-
-                for (Double s : scores.getFirst()) {
-                    score += s;
-                }
-
-                score /= scores.getFirst().size();
-            } else {
-                double caiSum = 0.0;
-                score = 0.0;
-
-                for (int answerIndex = 0; answerIndex < question.getNumberOfAnswers(); answerIndex++) {
-                    double cai = classification.getCAI(question.getAlternative(), ((AssignmentExample) question.getAnswerByIndex(answerIndex)).getClassIndex());
-                    score += cai * scores.getFirst().get(answerIndex);
-                    caiSum += cai;
-                }
-
-                if (score != 0) {
-                    score /= caiSum;
-                }
+            for (Double s : scores.getFirst()) {
+                score += s;
             }
 
-            if (bestQuestions.size() == 0 || score < maxScore) {
-                maxScore = score;
-                bestQuestions.clear();
-                bestQuestions.add(scores.getSecond());
-            } else if (bestQuestions.size() > 0 && score == maxScore) {
-                bestQuestions.add(scores.getSecond());
+            score /= scores.getFirst().size();
+        } else {
+            double caiSum = 0.0;
+            score = 0.0;
+
+            for (int answerIndex = 0; answerIndex < question.getNumberOfAnswers(); answerIndex++) {
+                double cai = classification.getCAI(question.getAlternative(), ((AssignmentExample) question.getAnswerByIndex(answerIndex)).getClassIndex());
+                score += cai * scores.getFirst().get(answerIndex);
+                caiSum += cai;
+            }
+
+            if (score != 0) {
+                score /= caiSum;
             }
         }
 
-        return bestQuestions.get(new Random().nextInt(bestQuestions.size()));
+        return score;
     }
 
     private Pair<List<Double>, StrategyResult> score(final RORClassification classification, ExactAssignmentQuestion question) {
