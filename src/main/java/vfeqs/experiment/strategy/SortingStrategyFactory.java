@@ -66,9 +66,11 @@ public class SortingStrategyFactory extends StrategyFactory {
             return new APOISortingStrategy(parameters);
         } else if (name.equals("AIW")) {
             return new AIWSortingStrategy(parameters);
-        }  else if (name.equals("DOM")) {
+        } else if (name.equals("DOM")) {
             return new DOMSortingStrategy(parameters);
-        } else {
+        }  else if (name.equals("NDOM")) {
+            return new NDOMSortingStrategy(parameters);
+        }else {
             throw new IllegalArgumentException("strategyName");
         }
     }

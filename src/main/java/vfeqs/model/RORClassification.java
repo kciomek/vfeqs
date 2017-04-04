@@ -89,7 +89,7 @@ public class RORClassification extends RORResult<VFClassificationSolution, Exact
             int atLeastAsGood = 0;
 
             for (VFClassificationSolution sample : this.getSamples()) {
-                if (sample.getAssignment(alternative) >= sample.getAssignment(alternative)) {
+                if (sample.getAssignment(alternative) >= sample.getAssignment(referenceAlternative)) {
                     atLeastAsGood++;
                 }
             }
@@ -264,11 +264,13 @@ public class RORClassification extends RORResult<VFClassificationSolution, Exact
     public double getAPOIEntropy(int alternative) {
         double result = 0.0;
 
-        for (int j = 0; j < this.getProblem().getNumberOfClasses(); j++) {
-            double apoi = this.getAPOI(alternative, j);
+        for (int i = 0; i < this.getProblem().getNumberOfAlternatives(); i++) {
+            if (i != alternative) { // apoi[i,i] = 1 => Math.log(apoi) = 0 => can be skipped
+                double apoi = this.getAPOI(alternative, i);
 
-            if (apoi > 0) {
-                result += -apoi * Math.log(apoi) / Math.log(2);
+                if (apoi > 0) {
+                    result += -apoi * Math.log(apoi) / Math.log(2);
+                }
             }
         }
 

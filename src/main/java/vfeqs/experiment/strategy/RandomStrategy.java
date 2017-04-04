@@ -29,6 +29,6 @@ public class RandomStrategy extends Strategy<RORResult> {
 
     @Override
     public String toString() {
-        return "RAND";
+        return "RAND" + getSuffix();
     }
 }

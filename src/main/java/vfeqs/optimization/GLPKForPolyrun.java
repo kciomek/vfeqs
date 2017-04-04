@@ -115,7 +115,7 @@ public class GLPKForPolyrun implements GLPSolver {
         GLPK.glp_delete_prob(lp);
 
         if (result == null) {
-            throw new UnboundedSystemException();
+            throw new UnboundedSystemException(null);
         } else {
             return result;
         }

@@ -1,11 +1,12 @@
 package vfeqs.experiment.strategy;
 
 import vfeqs.experiment.ExactAssignmentQuestion;
-import vfeqs.experiment.Pair;
 import vfeqs.model.RORClassification;
 import vfeqs.model.RORResult;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 public abstract class SortingStrategy extends Strategy<RORClassification> {
     private final int requestedIndex;
@@ -33,35 +34,6 @@ public abstract class SortingStrategy extends Strategy<RORClassification> {
         }
 
         return strategyResults.get(rorClassification);
-    }
-
-    protected String getSuffix() {
-        StringBuilder sb = new StringBuilder();
-
-        if (this.getResultParameters() != null) {
-            Integer limit = (Integer) this.getResultParameters().get("questionsLimit");
-            String stopCriterionStr = (String) this.getResultParameters().get("stopCriterionStr");
-            Integer index = (Integer) this.getResultParameters().get("requestedIndex");
-            String tieResolverStr = (String) this.getResultParameters().get("tieResolverStr");
-
-            if (limit != null) {
-                sb.append("-Q").append(limit);
-            }
-
-            if (stopCriterionStr != null) {
-                sb.append("-S/").append(stopCriterionStr);
-            }
-
-            if (index != null) {
-                sb.append("-P").append(index);
-            }
-
-            if (tieResolverStr != null) {
-                sb.append("-T/").append(tieResolverStr);
-            }
-        }
-
-        return sb.length() > 0 ? ":" + sb.deleteCharAt(0).toString() : "";
     }
 
     protected abstract double scoreQuestion(RORClassification classification, ExactAssignmentQuestion question);
