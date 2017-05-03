@@ -96,7 +96,9 @@ public class Main {
                                     .append("\t")
                                     .append(classification.getAverageAPOIEntropy())
                                     .append("\t")
-                                    .append(classification.getAverageAIW());
+                                    .append(classification.getAverageAIW())
+                                    .append("\t")
+                                    .append(classification.getMaxMinmaxRegret());
                         }
 
                         System.out.println(sb.toString());

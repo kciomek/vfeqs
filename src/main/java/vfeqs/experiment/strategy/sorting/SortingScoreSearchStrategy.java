@@ -35,7 +35,8 @@ public class SortingScoreSearchStrategy extends SortingStrategy {
         AIW("AIW"),
         APOI("APOI"),
         CAI("CAI"),
-        QUE("QUE");
+        QUE("QUE"),
+        REG("REG");
 
         private final String stringValue;
 
@@ -109,8 +110,10 @@ public class SortingScoreSearchStrategy extends SortingStrategy {
                 score = successor.getAverageAPOIEntropy();
             } else if (this.scorer == Scorer.CAI) {
                 score = successor.getAverageCAIEntropy();
-            } else { // this.scorer == Scorer.QUE
+            } else if (this.scorer == Scorer.QUE) {
                 score = successor.getNumberOfQuestions();
+            } else { // this.scorer == Scorer.REG
+                score = successor.getMaxMinmaxRegret();
             }
 
             scores.add(score);

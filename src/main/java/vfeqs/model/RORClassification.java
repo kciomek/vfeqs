@@ -7,6 +7,7 @@ import vfeqs.experiment.Question;
 import vfeqs.model.preferenceinformation.AssignmentExample;
 import vfeqs.model.preferenceinformation.PreferenceInformation;
 import vfeqs.model.solution.VFClassificationSolution;
+import vfeqs.optimization.*;
 
 import java.util.*;
 
@@ -14,6 +15,7 @@ public class RORClassification extends RORResult<VFClassificationSolution, Exact
     private final ContAssignmentRelation contAssignmentRelation;
     private final Double[][] cai;
     private final Double[][] apoi;
+    private final Double[] minmaxRegret;
 
     private List<VFClassificationSolution> samples;
 
@@ -22,6 +24,7 @@ public class RORClassification extends RORResult<VFClassificationSolution, Exact
 
         this.cai = new Double[this.getProblem().getNumberOfAlternatives()][this.getProblem().getNumberOfClasses()];
         this.apoi = new Double[this.getProblem().getNumberOfAlternatives()][this.getProblem().getNumberOfAlternatives()];
+        this.minmaxRegret = new Double[this.getProblem().getNumberOfAlternatives()];
 
         if (calculateProbability) {
             this.samples = this.generateSamples();
@@ -38,6 +41,7 @@ public class RORClassification extends RORResult<VFClassificationSolution, Exact
 
         this.cai = new Double[this.getProblem().getNumberOfAlternatives()][this.getProblem().getNumberOfClasses()];
         this.apoi = new Double[this.getProblem().getNumberOfAlternatives()][this.getProblem().getNumberOfAlternatives()];
+        this.minmaxRegret = new Double[this.getProblem().getNumberOfAlternatives()];
 
         if (this.getCalculateProbability()) {
             this.samples = this.generateSamples();
@@ -84,7 +88,7 @@ public class RORClassification extends RORResult<VFClassificationSolution, Exact
         return this.cai[alternative][classIndex];
     }
 
-    private double getAPOI(int alternative, int referenceAlternative) {
+    public double getAPOI(int alternative, int referenceAlternative) {
         if (this.apoi[alternative][referenceAlternative] == null) {
             int atLeastAsGood = 0;
 
@@ -186,6 +190,8 @@ public class RORClassification extends RORResult<VFClassificationSolution, Exact
                 }
 
                 return true;
+            } else if (stopCriterion.getFirst().equals("REG")) {
+                return this.getMaxMinmaxRegret() <= stopCriterion.getSecond();
             } else {
                 throw new RuntimeException("Unsupported stop criterion: " + stopCriterion.getFirst());
             }
@@ -275,5 +281,65 @@ public class RORClassification extends RORResult<VFClassificationSolution, Exact
         }
 
         return result;
+    }
+
+    public double getMinmaxRegret(int alternative) {
+        if (this.minmaxRegret[alternative] == null) {
+            if (this.getAIW(alternative) == 1) {
+                this.minmaxRegret[alternative] = 0.0; // by definition
+            } else {
+                double minmaxRegret = Double.POSITIVE_INFINITY;
+
+                for (int classIndex = this.contAssignmentRelation.getCmin(alternative); classIndex <= this.contAssignmentRelation.getCmax(alternative); classIndex++) {
+                    double regret = 0.0;
+                    regret = Math.max(regret, this.calculateRegretRelatedToThreshold(alternative, classIndex, true));
+                    regret = Math.max(regret, this.calculateRegretRelatedToThreshold(alternative, classIndex, false));
+
+                    minmaxRegret = Math.min(minmaxRegret, regret);
+                }
+
+                this.minmaxRegret[alternative] = minmaxRegret;
+            }
+        }
+
+        return this.minmaxRegret[alternative];
+    }
+
+    public double getMaxMinmaxRegret() {
+        double result = Double.NEGATIVE_INFINITY;
+
+        for (int i = 0; i < this.getProblem().getNumberOfAlternatives(); i++) {
+            result = Math.max(result, this.getMinmaxRegret(i));
+        }
+
+        return result;
+    }
+
+    private double calculateRegretRelatedToThreshold(int alternative, int classIndex, boolean under) { // under == true => below lower threshold, over upper threshold otherwise
+        if ((classIndex == 0 && under) || (classIndex == this.getProblem().getNumberOfClasses() - 1 && !under)) {
+            return 0.0;
+        }
+
+        final int numberOfSegments = this.getProblem().getNumberOfCharacteristicPoints() - 1;
+        final VFModel model = new VFModel(this.getModel().getConstraints());
+        final GLPKVariableOptimizer optimizer = new GLPKVariableOptimizer();
+        double[] objective = new double[model.getNumberOfVariables()];
+
+        for (int i = 0; i < this.getProblem().getNumberOfCriteria(); i++) {
+            for (Map.Entry<Integer, Double> entry : this.getProblem().getValuesToVariables()[alternative][i].entrySet()) {
+                objective[numberOfSegments * i + entry.getKey() - 1] += entry.getValue() * (under ? -1.0 : 1.0);
+            }
+        }
+
+        objective[this.getProblem().getFirstThresholdIndex() + classIndex - (under ? 1 : 0)] = under ? 1.0 : -1.0;
+
+        try {
+            OptimizationResult result = optimizer.optimize(GLPVariableOptimizer.Direction.Maximize, objective, model);
+            return under ? result.getValue() : result.getValue() + this.getEpsilon();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        } catch (InfeasibleSystemException e) {
+            throw new RuntimeException(e);
+        }
     }
 }
