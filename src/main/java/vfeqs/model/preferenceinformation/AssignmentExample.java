@@ -44,7 +44,7 @@ public class AssignmentExample implements PreferenceInformation {
         }
 
 
-        if (classIndex < problem.getNumberOfClasses() - 1 &&  (this.type == Type.AT_MOST || this.type == Type.EXACT)) {
+        if (classIndex < problem.getNumberOfClasses() - 1 && (this.type == Type.AT_MOST || this.type == Type.EXACT)) {
             lst.add(AssignmentExample.buildConstraint(problem, alternative, false, classIndex, epsilon));
         }
 
@@ -74,7 +74,7 @@ public class AssignmentExample implements PreferenceInformation {
             numberOfVariables += 1;
         }
 
-        if (problem.getNumberOfClasses() > 1) {
+        if (problem.getNumberOfClasses() > 1 && problem.getThresholds() == null) {
             numberOfVariables += problem.getNumberOfClasses() - 1;
         }
 
@@ -89,18 +89,34 @@ public class AssignmentExample implements PreferenceInformation {
 
         String direction;
 
-        if (atLeast) {
-            lhs[problem.getFirstThresholdIndex() + classIndex - 1] = -1.0;
-            direction = ">=";
-        } else {
-            lhs[problem.getFirstThresholdIndex() + classIndex] = -1.0;
-
-            direction = "<=";
-
-            if (epsilon == null) {
-                lhs[lhs.length - 1] = 1.0;
+        if (problem.getThresholds() == null) {
+            if (atLeast) {
+                lhs[problem.getFirstThresholdIndex() + classIndex - 1] = -1.0;
+                direction = ">=";
             } else {
-                rhs = -epsilon;
+                lhs[problem.getFirstThresholdIndex() + classIndex] = -1.0;
+
+                direction = "<=";
+
+                if (epsilon == null) {
+                    lhs[lhs.length - 1] = 1.0;
+                } else {
+                    rhs = -epsilon;
+                }
+            }
+        } else {
+            if (atLeast) {
+                direction = ">=";
+                rhs = problem.getThresholds()[classIndex - 1];
+            } else {
+                direction = "<=";
+                rhs = problem.getThresholds()[classIndex];
+
+                if (epsilon == null) {
+                    lhs[lhs.length - 1] = 1.0;
+                } else {
+                    rhs -= epsilon;
+                }
             }
         }
 

@@ -6,7 +6,8 @@ public class VFProblem {
     private final PerformanceMatrix performanceMatrix;
     private final int numberOfCharacteristicPoints;
     private final int numberOfClasses;
-    private final int firstThresholdIndex;
+    private final Integer firstThresholdIndex; // if null than thresholds are predefined in this.thresholds
+    private final double[] thresholds; // for predefined constant thresholds
     private final Map<Integer, Double>[][] valuesToVariables;
 
     public Map<Integer, Double>[][] getValuesToVariables() {
@@ -15,12 +16,13 @@ public class VFProblem {
 
     public VFProblem(PerformanceMatrix performanceMatrix,
                      int numberOfCharacteristicPoints) {
-        this(performanceMatrix, numberOfCharacteristicPoints, 0);
+        this(performanceMatrix, numberOfCharacteristicPoints, 0, null);
     }
 
     public VFProblem(PerformanceMatrix performanceMatrix,
                      int numberOfCharacteristicPoints, // todo: allow different number of chpoints for different criteria
-                     int numberOfClasses) {  // only for sorting problem
+                     int numberOfClasses,
+                     double[] thresholds) {  // only for sorting problem
         if (numberOfCharacteristicPoints < 2) {
             throw new IllegalArgumentException("numberOfCharacteristicPoints");
         }
@@ -29,10 +31,23 @@ public class VFProblem {
             throw new IllegalArgumentException("numberOfClasses");
         }
 
+        if (thresholds != null && thresholds.length != numberOfClasses - 1) {
+            throw new IllegalArgumentException("thresholds");
+        }
+
+        if (thresholds != null) {
+            for (int i = 1; i < thresholds.length; i++) {
+                if (thresholds[i - 1] >= thresholds[i]) {
+                    throw new IllegalArgumentException("thresholds should be strictly monotonic");
+                }
+            }
+        }
+
         this.performanceMatrix = performanceMatrix;
         this.numberOfCharacteristicPoints = numberOfCharacteristicPoints;
         this.numberOfClasses = numberOfClasses;
-        this.firstThresholdIndex = getNumberOfCriteria() * (numberOfCharacteristicPoints - 1);
+        this.firstThresholdIndex = thresholds == null ? getNumberOfCriteria() * (numberOfCharacteristicPoints - 1) : null;
+        this.thresholds = thresholds;
 
         int numberOfAlternatives = this.getNumberOfAlternatives();
         int numberOfCriteria = this.getNumberOfCriteria();
@@ -123,8 +138,12 @@ public class VFProblem {
         return numberOfCharacteristicPoints;
     }
 
-    public int getFirstThresholdIndex() { // only for sorting problem
+    public Integer getFirstThresholdIndex() { // only for sorting problem
         return firstThresholdIndex;
+    }
+
+    public double[] getThresholds() {
+        return thresholds;
     }
 
     public int getNumberOfClasses() { // only for sorting problem
@@ -141,7 +160,7 @@ public class VFProblem {
             numberOfVariables += 1;
         }
 
-        if (numberOfClasses > 1) {
+        if (numberOfClasses > 1 && this.thresholds == null) {
             numberOfVariables += numberOfClasses - 1;
         }
 
@@ -179,29 +198,31 @@ public class VFProblem {
 
         // monotonicity of thresholds
 
-        for (int i = 0; i < numberOfClasses; i++) {
-            double[] lhs = new double[numberOfVariables];
-            double rhs = 0.0;
+        if (thresholds == null) {
+            for (int i = 0; i < numberOfClasses; i++) {
+                double[] lhs = new double[numberOfVariables];
+                double rhs = 0.0;
 
-            if (i < numberOfClasses - 1) {
-                lhs[firstThresholdIndex + i] = -1.0;
+                if (i < numberOfClasses - 1) {
+                    lhs[firstThresholdIndex + i] = -1.0;
+                }
+
+                if (i > 0) {
+                    lhs[firstThresholdIndex + i - 1] = 1.0;
+                }
+
+                if (epsilon == null) {
+                    lhs[lhs.length - 1] = 1.0;
+                } else {
+                    rhs = -epsilon;
+                }
+
+                if (i == numberOfClasses - 1) {
+                    rhs += 1;
+                }
+
+                model.add(new Constraint(lhs, "<=", rhs, "threshold monotonicity(" + i + ")"));
             }
-
-            if (i > 0) {
-                lhs[firstThresholdIndex + i - 1] = 1.0;
-            }
-
-            if (epsilon == null) {
-                lhs[lhs.length - 1] = 1.0;
-            } else {
-                rhs = -epsilon;
-            }
-
-            if (i == numberOfClasses - 1) {
-                rhs += 1;
-            }
-
-            model.add(new Constraint(lhs, "<=", rhs, "threshold monotonicity(" + i + ")"));
         }
 
         return model;

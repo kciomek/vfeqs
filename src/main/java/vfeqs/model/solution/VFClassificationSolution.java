@@ -18,7 +18,11 @@ public class VFClassificationSolution extends VFSolution {
         if (problem.getNumberOfClasses() > 0) {
             thresholds = new double[problem.getNumberOfClasses()];
 
-            System.arraycopy(variableValues, problem.getFirstThresholdIndex(), thresholds, 0, problem.getNumberOfClasses() - 1);
+            if (problem.getThresholds() == null) {
+                System.arraycopy(variableValues, problem.getFirstThresholdIndex(), thresholds, 0, problem.getNumberOfClasses() - 1);
+            } else {
+                thresholds = problem.getThresholds();
+            }
         } else {
             throw new RuntimeException("Cannot built VFClassificationSolution with no classes.");
         }

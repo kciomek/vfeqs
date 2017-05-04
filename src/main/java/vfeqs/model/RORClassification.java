@@ -331,11 +331,27 @@ public class RORClassification extends RORResult<VFClassificationSolution, Exact
             }
         }
 
-        objective[this.getProblem().getFirstThresholdIndex() + classIndex - (under ? 1 : 0)] = under ? 1.0 : -1.0;
+        if (this.getProblem().getThresholds() == null) {
+            objective[this.getProblem().getFirstThresholdIndex() + classIndex - (under ? 1 : 0)] = under ? 1.0 : -1.0;
+        }
 
         try {
             OptimizationResult result = optimizer.optimize(GLPVariableOptimizer.Direction.Maximize, objective, model);
-            return under ? result.getValue() : result.getValue() + this.getEpsilon();
+            double regret = result.getValue();
+
+            if (this.getProblem().getThresholds() != null) {
+                if (under) {
+                    regret += this.getProblem().getThresholds()[classIndex - 1];
+                } else {
+                    regret -= this.getProblem().getThresholds()[classIndex];
+                }
+            }
+
+            if (!under) {
+                regret += this.getEpsilon();
+            }
+
+            return regret;
         } catch (Exception e) {
             throw new RuntimeException(e);
         } catch (InfeasibleSystemException e) {

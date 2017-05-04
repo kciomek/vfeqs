@@ -8,6 +8,8 @@ import vfeqs.model.RORResult;
 import vfeqs.model.RORResultFactory;
 import vfeqs.model.VFProblem;
 
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.util.*;
 
 public class Experiment implements Comparable<Experiment> {
@@ -118,7 +120,21 @@ public class Experiment implements Comparable<Experiment> {
                 .append(problem.getNumberOfCharacteristicPoints())
                 .append("\t")
                 .append(problem.getNumberOfClasses())
-                .append("\t")
+                .append("\t");
+
+        if (problem.getThresholds() == null) {
+            sb.append("-");
+        } else {
+            DecimalFormat df = (DecimalFormat) NumberFormat.getNumberInstance(Locale.ENGLISH);
+
+            for (double val : problem.getThresholds()) {
+                sb.append(df.format(val)).append(",");
+            }
+
+            sb.deleteCharAt(sb.length() - 1);
+        }
+
+        sb.append("\t")
                 .append(problem.getPerformanceMatrix().getIdentifier())
                 .append("\t")
                 .append(problem.getPerformanceMatrix().getGenerationMethod().toString())

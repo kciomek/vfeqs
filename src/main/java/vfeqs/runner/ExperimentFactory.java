@@ -116,7 +116,20 @@ public class ExperimentFactory {
         final List<Integer> alternatives = ExperimentFactory.parseIntervalToList(problemSubString[0]);
         final List<Integer> criteria = ExperimentFactory.parseIntervalToList(problemSubString[1]);
         final List<Integer> chPoints = ExperimentFactory.parseIntervalToList(problemSubString[2]);
-        final List<Integer> classes = problemString.length == 1 ? Arrays.asList(0) : ExperimentFactory.parseIntervalToList(problemString[1]);
+
+        String classesIntervalString = "0";
+        String thresholdsMethodString = null;
+
+        if (problemString.length > 1) {
+            String[] classesFields = problemString[1].split(":", 2);
+            classesIntervalString = classesFields[0];
+
+            if (classesFields.length > 1) {
+                thresholdsMethodString = classesFields[1];
+            }
+        }
+
+        final List<Integer> classes = ExperimentFactory.parseIntervalToList(classesIntervalString);
 
         final InstanceSeed instanceSeed = new InstanceSeed(problemSubString.length == 4 ? problemSubString[3] : null);
 
@@ -157,7 +170,7 @@ public class ExperimentFactory {
         final Double thinningFunctionParameter = thFunction.length == 1 ? null : Double.parseDouble(thFunction[1]);
 
         return this.create(type, priority, increasingPriority,
-                alternatives, criteria, chPoints, classes,
+                alternatives, criteria, chPoints, classes, thresholdsMethodString,
                 instanceSeed,
                 numberOfInstances, repetitionPerInstance, internalRepetitions,
                 dm, strategies,
@@ -176,6 +189,7 @@ public class ExperimentFactory {
             Iterable<Integer> numberOfCriteria,
             Iterable<Integer> numberOfChPoints,
             Iterable<Integer> numberOfClasses,
+            String thresholdsMethodString,
             InstanceSeed seed,
             int numberOfInstances,
             int numberOfRepetitions,
@@ -212,7 +226,7 @@ public class ExperimentFactory {
         final boolean generateFixedDecisionMaker = decisionMaker == null;
 
         for (int cls : numberOfClasses) {
-            for (int p: numberOfChPoints) {
+            for (int p : numberOfChPoints) {
                 for (int c : numberOfCriteria) {
                     for (int a : numberOfAlternatives) {
                         ThinningFunction thinningFunction;
@@ -232,30 +246,60 @@ public class ExperimentFactory {
                         for (int i = 0; i < numberOfInstances; i++) {
                             VFProblem problem;
 
+                            double[] thresholds = null;
+
+                            if (cls >= 2 && thresholdsMethodString != null) {
+                                thresholds = new double[cls - 1];
+
+                                if ("random".equals(thresholdsMethodString)) {
+                                    Random random = new Random();
+
+                                    for (int j = 0; j < cls - 1; j++) {
+                                        thresholds[j] = minEpsilon + random.nextDouble() * (1.0 - 2.0 * minEpsilon);
+                                    }
+
+                                    Arrays.sort(thresholds);
+                                } else if ("equal".equals(thresholdsMethodString)) {
+                                    for (int j = 0; j < cls - 1; j++) {
+                                        thresholds[j] = (j + 1.0) / (double) cls;
+                                    }
+                                } else if (thresholdsMethodString != null) {
+                                    String[] strThresholds = thresholdsMethodString.split(",");
+
+                                    if (strThresholds.length != thresholds.length) {
+                                        throw new IllegalArgumentException("List of thresholds has invalid length.");
+                                    }
+
+                                    for (int j = 0; j < cls - 1; j++) {
+                                        thresholds[j] = Double.parseDouble(strThresholds[j]);
+                                    }
+                                }
+                            }
+
                             if (seed.getPath() == null) {
                                 if ("g".equals(seed.getMethod())) {
                                     problem = new VFProblem(
                                             PerformanceMatrix.buildRandom(a, c,
                                                     PerformanceMatrix.GenerationMethod.ElementFromGauss,
                                                     seed.getSeed()),
-                                            p, cls);
+                                            p, cls, thresholds);
                                 } else if ("u".equals(seed.getMethod())) {
                                     problem = new VFProblem(
                                             PerformanceMatrix.buildRandom(a, c,
                                                     PerformanceMatrix.GenerationMethod.ElementFromUniform,
                                                     seed.getSeed()),
-                                            p, cls);
+                                            p, cls, thresholds);
                                 } else if ("h".equals(seed.getMethod())) {
                                     problem = new VFProblem(
                                             PerformanceMatrix.buildRandom(a, c,
                                                     PerformanceMatrix.GenerationMethod.VectorFromHypersphere,
                                                     seed.getSeed()),
-                                            p, cls);
+                                            p, cls, thresholds);
                                 } else {
                                     throw new IllegalArgumentException("Unknown method " + seed.getMethod());
                                 }
                             } else {
-                                problem = new VFProblem(PerformanceMatrix.load(seed.getPath()), p, cls);
+                                problem = new VFProblem(PerformanceMatrix.load(seed.getPath()), p, cls, thresholds);
                             }
 
                             for (int j = 0; j < numberOfRepetitions; j++) {
