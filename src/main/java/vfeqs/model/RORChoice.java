@@ -215,6 +215,11 @@ public class RORChoice extends RORResult<VFChoiceSolution, PairwiseComparisonQue
     }
 
     @Override
+    public boolean isAlternativeStopCriterionSatisfied() {
+        return false;
+    }
+
+    @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
 

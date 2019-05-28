@@ -139,6 +139,36 @@ public abstract class RORResult<SAMPLE_TYPE, QUESTION_TYPE extends Question> {
             this.questionUpdateNeeded = false;
         }
 
+        if (this.parameters != null) {
+            final Integer questionsLimit = (Integer) this.parameters.get("questionsLimit");
+
+            if (questionsLimit != null && questionsLimit < this.questions.size()) {
+                // TODO: provide random from outside
+                Random random = new Random();
+                HashSet<QUESTION_TYPE> result = new HashSet<QUESTION_TYPE>(questionsLimit);
+                List<QUESTION_TYPE> lresult = new ArrayList<QUESTION_TYPE>(questionsLimit);
+
+                for (int i = this.questions.size() - questionsLimit; i < this.questions.size(); i++) {
+                    int pos = random.nextInt(i + 1);
+                    QUESTION_TYPE item = this.questions.get(pos);
+
+                    if (result.contains(item)) {
+                        result.add(this.questions.get(i));
+                        lresult.add(this.questions.get(i));
+                    } else {
+                        result.add(item);
+                        lresult.add(item);
+                    }
+                }
+
+                if (lresult.size() != questionsLimit) {
+                    throw new RuntimeException("lresult.size() != questionsLimit" + lresult.size() + " " + questionsLimit);
+                }
+
+                return lresult;
+            }
+        }
+
         return this.questions;
     }
 
@@ -169,4 +199,13 @@ public abstract class RORResult<SAMPLE_TYPE, QUESTION_TYPE extends Question> {
     protected boolean getCalculateProbability() {
         return this.calculateProbability;
     }
+
+    public int getNumberOfQuestions() {
+        //fixme
+        this.getQuestions();
+        this.questionUpdateNeeded = true;
+        return this.questions.size();
+    }
+
+    public abstract boolean isAlternativeStopCriterionSatisfied();
 }

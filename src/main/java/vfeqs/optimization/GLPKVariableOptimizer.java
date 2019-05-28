@@ -8,6 +8,16 @@ import java.util.List;
 public class GLPKVariableOptimizer implements GLPVariableOptimizer {
     @Override
     public OptimizationResult optimize(Direction direction, int variableIndex, VFModel model) throws UnboundedSystemException, InfeasibleSystemException {
+        double[] objective = new double[model.getNumberOfVariables()];
+        objective[variableIndex] = 1.0;
+        return this.optimize(direction, objective, model);
+    }
+
+    public OptimizationResult optimize(Direction direction, double[] objective, VFModel model) throws UnboundedSystemException, InfeasibleSystemException {
+        if (objective.length != model.getNumberOfVariables()) {
+            throw new IllegalArgumentException("Length of objective has to be equal to number of variables in provided model.");
+        }
+
         glp_prob lp;
         glp_smcp parm;
         SWIGTYPE_p_int ind;
@@ -65,7 +75,9 @@ public class GLPKVariableOptimizer implements GLPVariableOptimizer {
 
 
             GLPK.glp_set_obj_dir(lp, direction == Direction.Minimize ? GLPKConstants.GLP_MIN : GLPKConstants.GLP_MAX);
-            GLPK.glp_set_obj_coef(lp, variableIndex + 1, 1.0);
+            for (int j = 0; j < model.getNumberOfVariables(); j++) {
+                GLPK.glp_set_obj_coef(lp, j + 1, objective[j]);
+            }
 
             parm = new glp_smcp();
             GLPK.glp_init_smcp(parm);

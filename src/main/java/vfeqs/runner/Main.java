@@ -3,6 +3,7 @@ package vfeqs.runner;
 
 import vfeqs.experiment.Experiment;
 import vfeqs.model.RORChoice;
+import vfeqs.model.RORClassification;
 import vfeqs.model.RORRanking;
 import vfeqs.model.RORResult;
 
@@ -47,7 +48,7 @@ public class Main {
                                     .append("\t")
                                     .append(ranking.getNumberOfDifferentRankings())
                                     .append("\t")
-                                    .append(ranking.getQuestions().size())
+                                    .append(ranking.getNumberOfQuestions())
                                     .append("\t")
                                     .append(ranking.getNumberOfNecessaryRelations())
                                     .append("\t")
@@ -66,7 +67,7 @@ public class Main {
                                     .append("\t")
                                     .append(experiment.getExperimentHash())
                                     .append("\t")
-                                    .append(choice.getQuestions().size())
+                                    .append(choice.getNumberOfQuestions())
                                     .append("\t")
                                     .append(choice.getRelation().getPotentiallyOptimalAlternatives().size())
                                     .append("\t")
@@ -79,10 +80,31 @@ public class Main {
                             }
 
                             sb.deleteCharAt(sb.length() - 1).append("}");
+                        } else {
+                            RORClassification classification = (RORClassification) result;
+
+                            sb.append("PROGRESS\t")
+                                    .append(experiment.toCSVString())
+                                    .append("\t")
+                                    .append(classification.getPreferenceInformation().size())
+                                    .append("\t")
+                                    .append(experiment.getExperimentHash())
+                                    .append("\t")
+                                    .append(classification.getNumberOfQuestions())
+                                    .append("\t")
+                                    .append(classification.getAverageCAIEntropy())
+                                    .append("\t")
+                                    .append(classification.getAverageAPOIEntropy())
+                                    .append("\t")
+                                    .append(classification.getAverageAIW())
+                                    .append("\t")
+                                    .append(classification.getMaxMinmaxRegret());
                         }
+
+                        System.out.println(sb.toString());
                     }
 
-                    if (printFinalResult && result.getQuestions().size() == 0) {
+                    if (printFinalResult && result.getNumberOfQuestions() == 0) {
                         StringBuilder sb = new StringBuilder();
                         sb.append("RESULT\t")
                                 .append(experiment.toCSVString())

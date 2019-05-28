@@ -272,6 +272,11 @@ public class RORRanking extends RORResult<VFRankingSolution, PairwiseComparisonQ
     }
 
     @Override
+    public boolean isAlternativeStopCriterionSatisfied() {
+        return false;
+    }
+
+    @Override
     public String toString() {
         return this.relation.getNecessaryRelationStringRepresentation();
     }
